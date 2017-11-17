@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style>
+
+body {
+    font: 10pt Verdana;
+	background-color: #154187;
+	
+}
+
+#background{
+ margin-top: 50px;
+
+
+}
+#output { margin-top: 50px; }
+
+th {
+    font-weight: normal;
+    text-align: right;
+	border: 1px solid black;
+	color: white;
+}
+
+td {
+    padding-left: 1em;
+    text-align: right;
+	border: 1px solid black;
+	color: white;
+}
+h1,h2{
+color: white;
+}
+a{
+color: white;
+
+}
+
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+</head>
+<body>
+
+<h1> <center>US Income Tax Calculator </center></h1>
+<div id= background>
+
+<center><h2>Income: <input id=income /><h2> <button>Calculator</button> </center> </div>
+
+<div id=output></div>
+
+<center><a href="http://en.wikipedia.org/wiki/Income_tax_in_the_United_States">Wiki <p>Took the help of wikipedia in calculation</p></a></center>
+<script>
+(function() {
+    function calc() {
+        var amt = parseInt($('#income').val()) || 0;
+        var taxes = {
+            '"Employee" Social Security': .062 * amt,
+            '"Employer" Social Security': .062 * amt,
+            '"Employee" Medicare': .0145 * amt,
+            '"Employer" Medicare': .0145 * amt,
+            'Federal Income Tax': 0 // see below
+        };
+        
+        var brackets = [
+            { max: 8925, pct: .1 },
+            { max: 36250, pct: .15 },
+            { max: 87850, pct: .25 },
+            { max: 183250, pct: .28 },
+            { max: 398350, pct: .33 },
+            { max: 400000, pct: .35 },
+            { max: null, pct: .396 }
+        ];
+        
+        var running = amt;
+        var lastChunk = 0;
+        var chunk = 0;
+        var tax = 0;
+        
+        $.each(brackets, function(i, bracket) {
+            var chunk = bracket.max;
+            
+            if (running < chunk) {
+                chunk = running;
+                running = 0;
+            } else {
+                running -= chunk;
+            }
+            
+            tax += chunk * bracket.pct;
+            lastChunk = chunk;
+        });
+        
+        taxes['Federal Income Tax'] = tax;
+        var total = 0;
+        
+        var h = $.map(taxes, function(v, p) {
+            total += v;
+            return '<tr><th>' + p + '</th><td>' + num(v) + '</td></tr>';
+        });
+        
+        h.push('<tr><th>Total</th><td>' + num(total) + '</td></tr>');
+        
+        var percentTotal = Math.round(total/amt * 1000)/10;
+        
+        h.push('<tr><th>Percent</th><td>' + percentTotal + '</td></tr>');
+        
+        $('#output').html('<table align="center">' + h.join('') + '</table>');
+    };
+    
+    function num(n) {
+        n = n.toString();
+        var i = n.indexOf('.');
+        if (i == -1) {
+            return n + '.00';
+        }
+        i = n.length - i;
+        if (i == 3)
+            return n;
+        
+        return n + '0';
+    };
+    
+    $('button').click(calc);
+    $('#income').val(30000);
+    calc();
+})();
+</script>
+</body>
+</html>
